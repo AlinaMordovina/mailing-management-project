@@ -9,16 +9,16 @@ class ClientAdmin(admin.ModelAdmin):
     search_fields = ('lastname', 'firstname', 'email',)
 
 
+@admin.register(Massage)
+class MassageAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'subject',)
+    search_fields = ('subject', 'body',)
+
+
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
     list_display = ('pk', 'start_time', 'end_time', 'request_period', 'status',)
     list_filter = ('start_time', 'end_time', 'request_period', 'status',)
-
-
-@admin.register(Massage)
-class MassageAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'subject', 'mailing',)
-    search_fields = ('subject', 'body',)
 
 
 @admin.register(Log)

@@ -1,0 +1,35 @@
+{% extends 'mailing/base.html' %}
+{% block content %}
+<div class="album py-5 bg-light">
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4 box-shadow">
+                    <h4 class="text-center"><b>Детальная карточка рассылки</b></h4>
+                    <div class="card-body">
+                        <p class="card-text"><b>Дата создания рассылки:</b> {{object.created_at}}</p>
+                        <p class="card-text"><b>Дата начала:</b> {{object.start_time}}</p>
+                        <p class="card-text"><b>Дата окончания:</b> {{object.end_time}}</p>
+                        <p class="card-text"><b>Периодичность:</b> {{object.request_period}}</p>
+                        <p class="card-text"><b>Статус:</b> {{object.status}}</p>
+                        <p class="card-text"><b>Дата последней рассылки:</b> {{object.last_mailing}}</p>
+                        <p class="card-text"><b>Тема сообщения:</b> {{object.massage.subject}}</p>
+                        <p class="card-text"><b>Тело сообщения:</b> {{object.massage.body}}</p>
+                        <p><b>Клиенты:</b></p>
+                        {% for client in object.clients.all %}
+                        <p class="card-text">{{client.email}}</p>
+                        {% endfor %}
+                        <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="text-white">
+                            <button type="button" class="btn btn-sm btn-outline-primary">Изменить</button>
+                        </a>
+                        <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="text-white">
+                            <button type="button" class="btn btn-sm btn-outline-danger">Удалить</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
