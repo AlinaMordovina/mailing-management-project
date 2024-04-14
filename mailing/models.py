@@ -17,8 +17,20 @@ class Client(models.Model):
         ordering = ('lastname', 'firstname',)
 
 
+class Massage(models.Model):
+    subject = models.CharField(max_length=150, verbose_name='Тема письма')
+    body = models.TextField(verbose_name='Тело письма')
+
+    def __str__(self):
+        return self.subject
+
+    class Meta:
+        verbose_name = 'Сообщение для рассылки'
+        verbose_name_plural = 'Сообщения для рассылок'
+
+
 class Mailing(models.Model):
-    # добавить время последней рассылки? нужно для автоматического расписания
+
     DAILY = 'Ежедневно'
     WEEKLY = 'Еженедельно'
     MONTHLY = 'Ежемесячно'
@@ -43,35 +55,22 @@ class Mailing(models.Model):
     end_time = models.TimeField(verbose_name='Время окончания рассылки')
     request_period = models.CharField(max_length=50, choices=PERIOD_CHOICES, verbose_name='Периодичность')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=CREATED, verbose_name='Статус')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания рассылки', blank=True)
+    last_mailing = models.DateTimeField(blank=True, null=True, verbose_name='Дата и время последней рассылки')
 
     clients = models.ManyToManyField(Client, verbose_name='Клиенты рассылки')
+    massage = models.ForeignKey(Massage, on_delete=models.CASCADE, verbose_name='Сообщение для рассылки')
 
     def __str__(self):
-        return f'{self.request_period} с {self.start_time} по {self.end_time}'
+        return f'{self.request_period} с {self.start_time} до {self.end_time}'
 
     class Meta:
         verbose_name = 'Почтовая рассылка'
         verbose_name_plural = 'Почтовые рассылки'
 
 
-class Massage(models.Model):
-    mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE, verbose_name='Почтовая рассылка')
-    subject = models.CharField(max_length=150, verbose_name='Тема письма')
-    body = models.TextField(verbose_name='Тело письма')
-
-    def __str__(self):
-        return self.subject
-
-    class Meta:
-        verbose_name = 'Сообщение для рассылки'
-        verbose_name_plural = 'Сообщения для рассылок'
-
-
 class Log(models.Model):
-    # убрать клиента, он тут не нужен
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE, verbose_name='Почтовая рассылка')
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, verbose_name='Клиент сервиса')
     last_try = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время последней попытки')
     status = models.BooleanField(verbose_name='Статус попытки')
     mail_service_response = models.CharField(max_length=150, verbose_name='Ответ почтового сервиса', blank=True,
