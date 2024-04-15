@@ -6,10 +6,10 @@ from blog.models import Blog
 
 def blog(request):
     context = {
-        'object_list': Blog.objects.filter(date_is_published__isnull=False),
-        'title': " Блог",
+        "object_list": Blog.objects.filter(date_is_published__isnull=False),
+        "title": " Блог",
     }
-    return render(request, 'blog/blog_list.html', context)
+    return render(request, "blog/blog_list.html", context)
 
 
 class BlogDetailView(DetailView):

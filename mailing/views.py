@@ -2,26 +2,31 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import (CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView)
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  TemplateView, UpdateView)
 
 from blog.models import Blog
-from mailing.forms import MailingForm, ClientForm, MassageForm
-from mailing.models import Mailing, Client, Massage
+from mailing.forms import ClientForm, MailingForm, MassageForm
+from mailing.models import Client, Mailing, Massage
 from mailing.services import get_cache_for_mailings
 
 
 class HomePageView(TemplateView):
-    template_name = 'mailing/home_page.html'
+    template_name = "mailing/home_page.html"
     extra_context = {
-        'title': 'Главная',
+        "title": "Главная",
     }
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        context_data['mailing_count'] = get_cache_for_mailings()
-        context_data['active_mail_count'] = Mailing.objects.filter(is_active=True).count()
-        context_data['client_count'] = Client.objects.all().count()
-        context_data['object_list'] = Blog.objects.filter(date_is_published__isnull=False)[:3]
+        context_data["mailing_count"] = get_cache_for_mailings()
+        context_data["active_mail_count"] = Mailing.objects.filter(
+            is_active=True
+        ).count()
+        context_data["client_count"] = Client.objects.all().count()
+        context_data["object_list"] = Blog.objects.filter(
+            date_is_published__isnull=False
+        )[:3]
 
         return context_data
 
@@ -32,7 +37,10 @@ class MailingListView(ListView):
     def get_queryset(self, **kwargs):
         if not self.request.user.is_authenticated:
             return Mailing.objects.filter(owner=None)
-        elif self.request.user.is_superuser or self.request.user.groups.filter(name="managers").exists() is True:
+        elif (
+            self.request.user.is_superuser
+            or self.request.user.groups.filter(name="managers").exists() is True
+        ):
             return Mailing.objects.all()
         return Mailing.objects.filter(owner=self.request.user)
 
@@ -60,7 +68,8 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)
         if (
-            self.object.owner == self.request.user
+            self.object.owner
+            == self.request.user
             # or self.request.user.is_superuser is True
             # or self.request.user.groups.filter(name="moderators").exists() is True
         ):
@@ -159,4 +168,4 @@ def update_mailing_activity(request, pk):
     else:
         mail_item.is_active = True
     mail_item.save()
-    return redirect('mailing:mailing_list')
+    return redirect("mailing:mailing_list")

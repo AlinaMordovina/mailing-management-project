@@ -72,14 +72,14 @@ def reset_password(request):
 
 
 @login_required
-@permission_required(['users.view_user', 'users.is_active'])
+@permission_required(["users.view_user", "users.is_active"])
 def get_users_list(request):
     users_list = User.objects.all()
     context = {
-        'object_list': users_list,
-        'title': 'Список пользователей сервиса',
+        "object_list": users_list,
+        "title": "Список пользователей сервиса",
     }
-    return render(request, 'users/user_list.html', context)
+    return render(request, "users/user_list.html", context)
 
 
 def update_user_activity(request, pk):
@@ -89,4 +89,4 @@ def update_user_activity(request, pk):
     else:
         user_item.is_active = True
     user_item.save()
-    return redirect('users:users_list')
+    return redirect("users:users_list")
