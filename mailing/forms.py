@@ -33,13 +33,3 @@ class MassageForm(StyleFormMixin, ModelForm):
     class Meta:
         model = Massage
         fields = "__all__"
-
-
-# class MailingModeratorForm(StyleFormMixin, ModelForm):
-#     class Meta:
-#         model = Mailing
-#         fields = (
-#             "is_published",
-#             "description",
-#             "category",
-#         )

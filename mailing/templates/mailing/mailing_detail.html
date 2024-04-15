@@ -20,16 +20,30 @@
                         {% for client in object.clients.all %}
                         <p class="card-text">{{client.email}}</p>
                         {% endfor %}
+                        {% if request.user.is_superuser or object.owner == request.user %}
                         <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="text-white">
                             <button type="button" class="btn btn-sm btn-outline-primary">Изменить</button>
                         </a>
                         <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="text-white">
                             <button type="button" class="btn btn-sm btn-outline-danger">Удалить</button>
                         </a>
+                        {% endif %}
+                        {% if perms.mailing.is_active %}
+                        {% if object.is_active %}
+                        <a href="{% url 'mailing:update_mailing_activity' object.pk %}" class="text-white">
+                            <button type="button" class="btn btn-sm btn-outline-warning">Деактивировать</button>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'mailing:update_mailing_activity' object.pk %}" class="text-white">
+                            <button type="button" class="btn btn-sm btn-outline-success">Активировать</button>
+                        </a>
+                        {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

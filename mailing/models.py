@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 
 class Client(models.Model):
@@ -7,6 +8,8 @@ class Client(models.Model):
     middlename = models.CharField(max_length=100, verbose_name='Отчество', blank=True, null=True)
     email = models.EmailField(verbose_name='Почта', unique=True)
     comment = models.TextField(verbose_name='Комментарий', blank=True, null=True)
+
+    owner = models.ForeignKey(User, verbose_name="Владелец", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.firstname} {self.lastname}: {self.email}'
@@ -20,6 +23,8 @@ class Client(models.Model):
 class Massage(models.Model):
     subject = models.CharField(max_length=150, verbose_name='Тема письма')
     body = models.TextField(verbose_name='Тело письма')
+
+    owner = models.ForeignKey(User, verbose_name="Владелец", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.subject
@@ -56,10 +61,13 @@ class Mailing(models.Model):
     request_period = models.CharField(max_length=50, choices=PERIOD_CHOICES, verbose_name='Периодичность')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=CREATED, verbose_name='Статус')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания рассылки', blank=True)
-    last_mailing = models.DateTimeField(blank=True, null=True, verbose_name='Дата и время последней рассылки')
+    last_mailing = models.DateField(blank=True, null=True, verbose_name='Дата и время последней рассылки')
+    next_mailing = models.DateField(blank=True, null=True, verbose_name='Дата и время следующей рассылки')
+    is_active = models.BooleanField(default=True, verbose_name='Активация рассылки')
 
     clients = models.ManyToManyField(Client, verbose_name='Клиенты рассылки')
     massage = models.ForeignKey(Massage, on_delete=models.CASCADE, verbose_name='Сообщение для рассылки')
+    owner = models.ForeignKey(User, verbose_name="Владелец", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.request_period} с {self.start_time} до {self.end_time}'
@@ -67,6 +75,9 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Почтовая рассылка'
         verbose_name_plural = 'Почтовые рассылки'
+        permissions = [
+            ("is_active", "Активация рассылки")
+        ]
 
 
 class Log(models.Model):

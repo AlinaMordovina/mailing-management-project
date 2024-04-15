@@ -8,12 +8,14 @@ from mailing.views import (MailingCreateView, MailingDeleteView,
                            ClientListView, ClientCreateView, ClientUpdateView,
                            ClientDetailView, ClientDeleteView,
                            MassageListView, MassageCreateView, MassageUpdateView,
-                           MassageDetailView, MassageDeleteView)
+                           MassageDetailView, MassageDeleteView, HomePageView, update_mailing_activity)
 
 app_name = MailingConfig.name
 
 urlpatterns = [
-    path("", MailingListView.as_view(), name="mailing_list"),
+    path('', HomePageView.as_view(), name='home_page'),
+
+    path("mailing/", MailingListView.as_view(), name="mailing_list"),
     path("mailing/<int:pk>/", MailingDetailView.as_view(), name="mailing_detail"),
     path("mailing/create", MailingCreateView.as_view(), name="mailing_create"),
     path(
@@ -22,6 +24,8 @@ urlpatterns = [
     path(
         "mailing/<int:pk>/delete", MailingDeleteView.as_view(), name="mailing_delete"
     ),
+    path('mailing/activity/<int:pk>/', update_mailing_activity, name='update_mailing_activity'),
+
     path("client/", ClientListView.as_view(), name="client_list"),
     path("client/<int:pk>/", ClientDetailView.as_view(), name="client_detail"),
     path("client/create", ClientCreateView.as_view(), name="client_create"),
@@ -31,6 +35,7 @@ urlpatterns = [
     path(
         "client/<int:pk>/delete", ClientDeleteView.as_view(), name="client_delete"
     ),
+
     path("massage/", MassageListView.as_view(), name="massage_list"),
     path("massage/<int:pk>/", MassageDetailView.as_view(), name="massage_detail"),
     path("massage/create", MassageCreateView.as_view(), name="massage_create"),
