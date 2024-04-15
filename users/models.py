@@ -5,7 +5,9 @@ from django.db import models
 class User(AbstractUser):
     username = None
 
-    phone = models.CharField(max_length=35, blank=True, null=True, verbose_name="Номер телефона")
+    phone = models.CharField(
+        max_length=35, blank=True, null=True, verbose_name="Номер телефона"
+    )
     avatar = models.ImageField(
         upload_to="users/avatar/", blank=True, null=True, verbose_name="Аватар"
     )
@@ -22,6 +24,4 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
-        permissions = [
-            ("is_active", "Активация пользователя")
-        ]
+        permissions = [("is_active", "Активация пользователя")]

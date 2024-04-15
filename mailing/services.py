@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 from smtplib import SMTPException
 
+from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils import timezone
-from django.conf import settings
 
-from mailing.models import Mailing, Log
+from mailing.models import Log, Mailing
 
 
 def daily_tasks():
@@ -15,7 +15,10 @@ def daily_tasks():
     if mailings.exists():
         for mailing in mailings:
             if mailing.start_time <= now < mailing.end_time:
-                if mailing.status == "Создана" or datetime.now().date() >= mailing.next_mailing:
+                if (
+                    mailing.status == "Создана"
+                    or datetime.now().date() >= mailing.next_mailing
+                ):
                     send_mailing(mailing)
                 else:
                     continue
@@ -29,7 +32,10 @@ def weekly_tasks():
     if mailings.exists():
         for mailing in mailings:
             if mailing.start_time <= now < mailing.end_time:
-                if mailing.status == "Создана" or datetime.now().date() >= mailing.next_mailing:
+                if (
+                    mailing.status == "Создана"
+                    or datetime.now().date() >= mailing.next_mailing
+                ):
                     send_mailing(mailing)
                 else:
                     continue
@@ -43,7 +49,10 @@ def monthly_tasks():
     if mailings.exists():
         for mailing in mailings:
             if mailing.start_time <= now < mailing.end_time:
-                if mailing.status == "Создана" or datetime.now().date() >= mailing.next_mailing:
+                if (
+                    mailing.status == "Создана"
+                    or datetime.now().date() >= mailing.next_mailing
+                ):
                     send_mailing(mailing)
                 else:
                     continue
@@ -72,7 +81,7 @@ def send_mailing(mailing):
                 mailing=mailing,
                 last_try=datetime.now(),
                 status=True,
-                mail_service_responce='Ok',
+                mail_service_responce="Ok",
             )
             log.save()
 
@@ -92,7 +101,7 @@ def send_mailing(mailing):
                 mailling=mailing,
                 last_try=datetime.now(),
                 status=False,
-                mail_service_responce=error
+                mail_service_responce=error,
             )
             log.save()
 
@@ -103,7 +112,7 @@ def send_mailing(mailing):
 
 def get_cache_for_mailings():
     if settings.CACHE_ENABLED:
-        key = 'mailings_count'
+        key = "mailings_count"
         mailings_count = cache.get(key)
         if mailings_count is None:
             mailings_count = Mailing.objects.all().count()

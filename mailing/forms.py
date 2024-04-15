@@ -1,6 +1,6 @@
 from django.forms import BooleanField, ModelForm
 
-from mailing.models import Mailing, Client, Massage
+from mailing.models import Client, Mailing, Massage
 
 
 class StyleFormMixin:
@@ -14,7 +14,6 @@ class StyleFormMixin:
 
 
 class MailingForm(StyleFormMixin, ModelForm):
-
     class Meta:
         model = Mailing
         exclude = (
