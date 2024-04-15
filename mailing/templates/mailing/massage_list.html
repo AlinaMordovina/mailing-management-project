@@ -8,6 +8,7 @@
 <table class="table table-striped table-bordered">
     <thead>
     <tr>
+        <th scope="col">Владелец</th>
         <th scope="col">Тема сообщения</th>
         <th scope="col">Тело сообщения</th>
         <th scope="col">Подробнее</th>
@@ -16,6 +17,7 @@
     <tbody>
     {% for massage in object_list %}
     <tr>
+        <td>{{ massage.owner }}</td>
         <td>{{ massage.subject }}</td>
         <td>{{ massage.body }}</td>
         <td>

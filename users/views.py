@@ -2,10 +2,10 @@ import random
 import secrets
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, UpdateView
 
@@ -69,3 +69,24 @@ def reset_password(request):
     request.user.set_password(new_password)
     request.user.save()
     return redirect(reverse("mailing:mailing_list"))
+
+
+@login_required
+@permission_required(['users.view_user', 'users.is_active'])
+def get_users_list(request):
+    users_list = User.objects.all()
+    context = {
+        'object_list': users_list,
+        'title': 'Список пользователей сервиса',
+    }
+    return render(request, 'users/user_list.html', context)
+
+
+def update_user_activity(request, pk):
+    user_item = get_object_or_404(User, pk=pk)
+    if user_item.is_active:
+        user_item.is_active = False
+    else:
+        user_item.is_active = True
+    user_item.save()
+    return redirect('users:users_list')

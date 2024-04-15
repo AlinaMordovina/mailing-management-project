@@ -1,28 +1,43 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.forms import inlineformset_factory
 from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import (CreateView, DeleteView, DetailView, ListView, UpdateView)
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView)
 
+from blog.models import Blog
 from mailing.forms import MailingForm, ClientForm, MassageForm
-from mailing.models import Mailing, Client, Massage, Log
-#from mailing.services import get_cached_product_list
+from mailing.models import Mailing, Client, Massage
+from mailing.services import get_cache_for_mailings
+
+
+class HomePageView(TemplateView):
+    template_name = 'mailing/home_page.html'
+    extra_context = {
+        'title': 'Главная',
+    }
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['mailing_count'] = get_cache_for_mailings()
+        context_data['active_mail_count'] = Mailing.objects.filter(is_active=True).count()
+        context_data['client_count'] = Client.objects.all().count()
+        context_data['object_list'] = Blog.objects.filter(date_is_published__isnull=False)[:3]
+
+        return context_data
 
 
 class MailingListView(ListView):
     model = Mailing
 
-    # def get_queryset(self):
-    #     return get_cached_product_list()
-
-    # def get_context_data(self, *args, **kwargs):
-    #     context_data = super().get_context_data(*args, **kwargs)
-    #     for product in context_data.get("object_list"):
-    #         product.version = product.versions.filter(is_active=True).first()
-    #     return context_data
+    def get_queryset(self, **kwargs):
+        if not self.request.user.is_authenticated:
+            return Mailing.objects.filter(owner=None)
+        elif self.request.user.is_superuser or self.request.user.groups.filter(name="managers").exists() is True:
+            return Mailing.objects.all()
+        return Mailing.objects.filter(owner=self.request.user)
 
 
-class MailingDetailView(DetailView):
+class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
 
 
@@ -31,63 +46,29 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     form_class = MailingForm
     success_url = reverse_lazy("mailing:mailing_list")
 
-    # def form_valid(self, form):
-    #     self.object = form.save()
-    #     self.object.owner = self.request.user
-    #     self.object.save()
-    #     return super().form_valid(form)
+    def form_valid(self, form):
+        self.object = form.save()
+        self.object.owner = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
 
-    # def get_object(self, queryset=None):
-    #     self.object = super().get_object(queryset)
-    #     if (
-    #         self.object.owner == self.request.user
-    #         or self.request.user.is_superuser is True
-    #         or self.request.user.groups.filter(name="moderators").exists() is True
-    #     ):
-    #         return self.object
-    #     raise Http404
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        if (
+            self.object.owner == self.request.user
+            # or self.request.user.is_superuser is True
+            # or self.request.user.groups.filter(name="moderators").exists() is True
+        ):
+            return self.object
+        raise Http404
 
     def get_success_url(self):
         return reverse("mailing:mailing_detail", args=[self.kwargs.get("pk")])
-
-    # def get_context_data(self, **kwargs):
-    #     context_data = super().get_context_data()
-    #     ProductFormset = inlineformset_factory(
-    #         Product, Version, form=VersionForm, extra=1
-    #     )
-    #     if self.request.method == "POST":
-    #         context_data["formset"] = ProductFormset(
-    #             self.request.POST, instance=self.object
-    #         )
-    #     else:
-    #         context_data["formset"] = ProductFormset(instance=self.object)
-    #
-    #     return context_data
-
-    # def form_valid(self, form):
-    #     context_data = self.get_context_data()
-    #     formset = context_data["formset"]
-    #     if form.is_valid() and formset.is_valid():
-    #         self.object = form.save()
-    #         formset.instance = self.object
-    #         formset.save()
-    #         return super().form_valid(form)
-    #     else:
-    #         return self.render_to_response(
-    #             self.get_context_data(form=form, formset=formset)
-    #         )
-
-    # def get_form_class(self):
-    #     user = self.request.user
-    #     if user.is_superuser or self.object.owner == user:
-    #         return ProductForm
-    #     elif user.groups.filter(name="moderators").exists() is True:
-    #         return ProductModeratorForm
 
 
 class MailingDeleteView(LoginRequiredMixin, DeleteView):
@@ -98,8 +79,13 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
 class ClientListView(ListView):
     model = Client
 
+    def get_queryset(self, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return Client.objects.all()
+        return Client.objects.filter(owner=self.request.user)
 
-class ClientDetailView(DetailView):
+
+class ClientDetailView(LoginRequiredMixin, DetailView):
     model = Client
 
 
@@ -107,6 +93,12 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy("mailing:client_list")
+
+    def form_valid(self, form):
+        self.object = form.save()
+        self.object.owner = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
@@ -125,8 +117,13 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
 class MassageListView(ListView):
     model = Massage
 
+    def get_queryset(self, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return Massage.objects.all()
+        return Massage.objects.filter(owner=self.request.user)
 
-class MassageDetailView(DetailView):
+
+class MassageDetailView(LoginRequiredMixin, DetailView):
     model = Massage
 
 
@@ -134,6 +131,12 @@ class MassageCreateView(LoginRequiredMixin, CreateView):
     model = Massage
     form_class = MassageForm
     success_url = reverse_lazy("mailing:massage_list")
+
+    def form_valid(self, form):
+        self.object = form.save()
+        self.object.owner = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
 
 class MassageUpdateView(LoginRequiredMixin, UpdateView):
@@ -147,3 +150,13 @@ class MassageUpdateView(LoginRequiredMixin, UpdateView):
 class MassageDeleteView(LoginRequiredMixin, DeleteView):
     model = Massage
     success_url = reverse_lazy("mailing:massage_list")
+
+
+def update_mailing_activity(request, pk):
+    mail_item = get_object_or_404(Mailing, pk=pk)
+    if mail_item.is_active:
+        mail_item.is_active = False
+    else:
+        mail_item.is_active = True
+    mail_item.save()
+    return redirect('mailing:mailing_list')

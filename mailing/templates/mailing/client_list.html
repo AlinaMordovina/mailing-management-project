@@ -8,6 +8,7 @@
 <table class="table table-striped table-bordered">
     <thead>
     <tr>
+        <th scope="col">Владелец</th>
         <th scope="col">Фамилия</th>
         <th scope="col">Имя</th>
         <th scope="col">Отчество</th>
@@ -18,6 +19,7 @@
     <tbody>
     {% for client in object_list %}
     <tr>
+        <td>{{ client.owner }}</td>
         <td>{{ client.firstname }}</td>
         <td>{{ client.lastname }}</td>
         <td>{{ client.middlename }}</td>
