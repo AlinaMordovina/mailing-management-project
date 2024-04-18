@@ -14,7 +14,7 @@ def daily_tasks():
     mailings = Mailing.objects.filter(request_period="Ежедневно")
     if mailings.exists():
         for mailing in mailings:
-            if mailing.start_time <= now < mailing.end_time:
+            if mailing.start_time <= now.time() < mailing.end_time:
                 if (
                     mailing.status == "Создана"
                     or datetime.now().date() >= mailing.next_mailing
@@ -31,7 +31,7 @@ def weekly_tasks():
     mailings = Mailing.objects.filter(request_period="Еженедельно")
     if mailings.exists():
         for mailing in mailings:
-            if mailing.start_time <= now < mailing.end_time:
+            if mailing.start_time <= now.time() < mailing.end_time:
                 if (
                     mailing.status == "Создана"
                     or datetime.now().date() >= mailing.next_mailing
@@ -48,7 +48,7 @@ def monthly_tasks():
     mailings = Mailing.objects.filter(request_period="Ежемесячно")
     if mailings.exists():
         for mailing in mailings:
-            if mailing.start_time <= now < mailing.end_time:
+            if mailing.start_time <= now.time() < mailing.end_time:
                 if (
                     mailing.status == "Создана"
                     or datetime.now().date() >= mailing.next_mailing
